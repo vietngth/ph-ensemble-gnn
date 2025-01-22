@@ -1,0 +1,29 @@
+dataset: bay_network
+exp: forecasting
+aggregator: weighted
+graph_order: 1
+top_k: null
+top_k_threshold: False
+graph_path: null  
+batch_size: 64
+num_workers: 10
+pin_memory: False
+
+reg_const: 0.0001
+hidden_size: 16
+out_size: 1
+
+window: 12
+horizon: 12
+conv_type: gcn
+gcn_layers: 2
+rnn_layers: 1
+num_heads: null 
+geo_feat: False
+
+optimizer: adam
+lr: 0.001
+gpus: 1
+patience: 10
+epochs: 100
+log_every_n_steps: 10
