@@ -1,0 +1,26 @@
+[project]
+name = "ph-ensemble-gnn"
+version = "0.1.0"
+description = "Persistent Homology-induced Ensemble of Graph Neural Networks"
+readme = "README.md"
+requires-python = "~=3.11.0"
+dependencies = [
+    "pip",
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "torchaudio==2.5.1",
+    "scikit-learn==1.7.2",
+    "lightning==2.5.0",
+    "einops==0.8.1",
+    "wandb==0.23.0"
+]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu124" }]
+torchvision = [{ index = "pytorch-cu124" }]
+torchaudio = [{ index = "pytorch-cu124" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
