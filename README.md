@@ -1,6 +1,7 @@
 # Persistent Homology-induced Graph Ensembles for Time Series Regressions
 
 This is the code implementation for paper "Persistent Homology-induced Graph Ensembles for Time Series Regressions". 
+Preprint: [[link]](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5521531).
 
 ## Use Cases
 We experimented all two applications:
