@@ -2,6 +2,8 @@
 
 This is the code implementation for paper "Persistent Homology-induced Graph Ensembles for Time Series Regressions". 
 
+Our preprint can be found [here](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5521531).
+
 ## Use Cases
 We experimented all two applications:
 1. Time-series Extrinsic Regression (TSER) on 2 seismic earthquake datasets: Central-West Italy (CW) and Central Italy (CI).
@@ -19,11 +21,20 @@ We track all the logging information via `WanDB` together with `Torch Lightning`
 ### 3. Environment setup
 We use [uv](https://docs.astral.sh/uv/) to manage the Python environment. In the project root:
 
-1. Run `uv sync`. This step will install all necessary dependencies declared in `pyproject.toml`.
-2. Run `source .venv/bin/activate`.
-3. Install `torch_geometric`: run `uv pip install torch_geometric`.
-4. Install dependencies: run `uv pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.5.1+cu124.html`
-5. Run `pip install -e .`
+1. Install dependencies declared in `pyproject.toml`:
+```
+uv sync
+```
+2. Install `torch_geometric` and its dependencies manually to prevent CUDA conflicts:
+```
+source .venv/bin/activate
+uv pip install torch_geometric
+uv pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.5.1+cu124.html
+```
+3. Install the current project in editable (development) mode:
+```
+pip install -e .
+```
 
 Note that we use `PyTorch 2.5.1` with `CUDA 12.4`. You may want to install all packages manually with `uv` if you want to use a different PyTorch version.
 
