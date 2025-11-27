@@ -30,5 +30,3 @@ patience: 10
 epochs: 100
 log_every_n_steps: 20
 
-cheb_k: null
-embed_dim: null
