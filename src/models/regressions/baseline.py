@@ -6,8 +6,6 @@ import lightning as L
 import numpy as np
 from torch_geometric.nn import GCNConv, GATConv, GATv2Conv
 
-from src.models.regressions.avwgcn import AVWGCN
-
 logger = logging.getLogger(__name__)
 
 def adj_matrix_to_edge_index_and_weight(adj_matrix):
@@ -48,10 +46,6 @@ class BaselineModel(L.LightningModule):
         self.conv_type = arch_config["conv_type"]
         self.num_heads = arch_config["num_heads"] if self.conv_type == "gat" else None
 
-        # for ablation study of graph generation
-        self.cheb_k = ablation_config["cheb_k"] if self.conv_type == "avwgcn" else None
-        self.embed_dim = ablation_config["embed_dim"] if self.conv_type == "avwgcn" else None
-
         self.optimizer = train_config["optimizer"]
         self.reg_const = train_config["reg_const"]
         self.lr = train_config["lr"]
@@ -72,17 +66,6 @@ class BaselineModel(L.LightningModule):
         elif self.conv_type == 'gatv2':
             self.graph_conv1 = GATv2Conv(self.cnn_out_size + (2 if self.geo_feat else 0), self.hidden_size * 2, heads=self.num_heads, bias=False)
             self.graph_conv2 = GATv2Conv(self.hidden_size * 2 * self.num_heads, self.hidden_size * 2, heads=self.num_heads, bias=False, concat=False)
-        elif self.conv_type == 'avw_gcn':
-            if self.embed_dim is None:
-                raise ValueError("embed_dim must be specified when using 'avw_gcn' as conv_type.")
-            self.graph_conv1 = AVWGCN(dim_in=self.cnn_out_size + (2 if self.geo_feat else 0),
-                                      dim_out=self.hidden_size * 2,
-                                      cheb_k=self.cheb_k,
-                                      embed_dim=self.embed_dim)
-            self.graph_conv2 = AVWGCN(dim_in=self.hidden_size * 2,
-                                      dim_out=self.hidden_size * 2,
-                                      cheb_k=self.cheb_k,
-                                      embed_dim=self.embed_dim)
         else:
             raise ValueError(f"Unsupported conv_type: {self.conv_type}")
 
@@ -112,7 +95,6 @@ class BaselineModel(L.LightningModule):
             x: Input tensor of shape (batch_size, num_nodes, seq_len, channels)
             graph_input: Adjacency matrices of shape (batch_size, num_nodes, num_nodes)
             graph_features: Optional graph features of shape (batch_size, num_nodes, feature_dim)
-            node_embeddings: Optional node embeddings of shape (num_nodes, embed_dim)
         
         Returns:
             outputs: Tensor of shape (batch_size, self.num_nodes, 5)
@@ -122,8 +104,6 @@ class BaselineModel(L.LightningModule):
         logger.debug(f"Input shapes: x={x.shape}, graph_input={graph_input.shape}")
         if self.geo_feat and graph_features is not None:
             logger.debug(f"graph_features shape: {graph_features.shape}")
-        if self.conv_type == 'avw_gcn' and node_embeddings is not None:
-            logger.debug(f"node_embeddings shape: {node_embeddings.shape}")
         
         # Reshape and apply Conv1d layers
         x = x.permute(0, 1, 3, 2).contiguous()  # (B, N, C, L)
@@ -157,22 +137,6 @@ class BaselineModel(L.LightningModule):
                 x_i = F.relu(x_i)
                 x_i = self.graph_conv2(x_i, edge_index)
                 x_i = F.tanh(x_i)
-            elif self.conv_type == 'avw_gcn':
-                # Use node_embeddings directly, as it should already be of shape (num_nodes, embed_dim)
-                if node_embeddings is None:
-                    node_emb_i = nn.Parameter(torch.randn(self.num_nodes, self.embed_dim), requires_grad=True).to(x.device)
-                else:
-                    node_emb_i = node_embeddings
-
-                # Add batch dimension to x_i only
-                x_i = x_i.unsqueeze(0)  # shape (1, N, dim_in)
-
-                x_i = self.graph_conv1(x_i, node_emb_i)
-                x_i = F.relu(x_i)
-                x_i = self.graph_conv2(x_i, node_emb_i)
-                x_i = F.tanh(x_i)
-
-                x_i = x_i.squeeze(0)  # back to (N, hidden)
             else:
                 raise ValueError(f"Unsupported conv_type: {self.conv_type}")
             
@@ -197,13 +161,8 @@ class BaselineModel(L.LightningModule):
         out = None
         batch_y = None
         if self.geo_feat:
-            if self.conv_type == 'avw_gcn':
-                batch_x, batch_graph, batch_features, batch_y = batch
-                batch_x, batch_graph, batch_features, batch_y = batch_x.to(self.device), batch_graph.to(self.device), batch_features.to(self.device), batch_y.to(self.device)
-                out = self(batch_x, batch_graph, graph_features=batch_features, node_embeddings=self.embed_dim)
-            else:
-                batch_x, batch_graph, batch_features, batch_y = [b.to(self.device) for b in batch]
-                out = self(batch_x, batch_graph, graph_features=batch_features)
+            batch_x, batch_graph, batch_features, batch_y = [b.to(self.device) for b in batch]
+            out = self(batch_x, batch_graph, graph_features=batch_features)
         else:
             batch_x, batch_graph, batch_y = [b.to(self.device) for b in batch]
             out = self(batch_x, batch_graph)
@@ -236,13 +195,8 @@ class BaselineModel(L.LightningModule):
         all_targets = []
             
         if self.geo_feat:
-            if self.conv_type == 'avw_gcn':
-                batch_x, batch_graph, batch_features, batch_y = batch
-                batch_x, batch_graph, batch_features, batch_y = batch_x.to(self.device), batch_graph.to(self.device), batch_features.to(self.device), batch_y.to(self.device)
-                out = self(batch_x, batch_graph, graph_features=batch_features, node_embeddings=self.embed_dim)
-            else:
-                batch_x, batch_graph, batch_features, batch_y = [b.to(self.device) for b in batch]
-                out = self(batch_x, batch_graph, graph_features=batch_features)
+            batch_x, batch_graph, batch_features, batch_y = [b.to(self.device) for b in batch]
+            out = self(batch_x, batch_graph, graph_features=batch_features)
         else:
             batch_x, batch_graph, batch_y = [b.to(self.device) for b in batch]
             out = self(batch_x, batch_graph)

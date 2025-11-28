@@ -58,10 +58,6 @@ def parse_args():
     parser.add_argument("--log_every_n_steps", type=int, default=30, help="Log every n steps for training")
     parser.add_argument("--project_name", type=str, default="regression", help="Wandb's project name")
 
-    # ablation study config
-    parser.add_argument("--cheb_k", type=int, default=None, help="For AWGCN only")
-    parser.add_argument("--embed_dim", type=int, default=None, help="For AWGCN only")
-
     kwargs = parser.parse_args()
     return kwargs 
 
@@ -202,11 +198,6 @@ if __name__ == "__main__":
     }
     
     ablation_config = None
-    if kwargs["cheb_k"] is not None:
-        ablation_config = {
-            "cheb_k": kwargs["cheb_k"],
-            "embed_dim": kwargs["embed_dim"]
-        }
     exp = kwargs["exp"]
     aggr = kwargs["aggregator"]
     seed = kwargs["data_seed"]
