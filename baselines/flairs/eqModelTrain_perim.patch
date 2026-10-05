@@ -1,0 +1,52 @@
+--- eqModelTrain.py
++++ eqModelTrain_perim.py
+@@ -355,18 +355,21 @@
+             for i in range(0,5):
+                 MSE.append(mean_squared_error(self.testTargets[:,:,i], new_predictions[:,:,i]))
+             print('mse = ',np.array(MSE).mean())
++            MSE_IM = list(MSE)  # ph-gnn: logging only, per-IM metrics of the fold
+             MSE = np.array(MSE).mean()
+             
+             RMSE = []
+             for i in range(0,5):
+                 RMSE.append(mean_squared_error(self.testTargets[:,:,i], new_predictions[:,:,i], squared=False))
+             print('rmse = ',np.array(RMSE).mean())
++            RMSE_IM = list(RMSE)  # ph-gnn: logging only
+             RMSE = np.array(RMSE).mean()
+             
+             MAE = []
+             for i in range(0,5):
+                 MAE.append(mean_absolute_error(self.testTargets[:,:,i], new_predictions[:,:,i]))
+             print('MAE = ',np.array(MAE).mean())
++            self.perim.append(dict(fold=k, mse=MSE_IM, rmse=RMSE_IM, mae=list(MAE)))  # ph-gnn: logging only (IM order of the targets)
+             MAE = np.array(MAE).mean()
+             
+ 
+@@ -501,9 +504,9 @@
+         print_time()
+         warnings.filterwarnings('ignore')
+         if modelN == 'transformer':   
+-            saveName = f"./results/results.n{self.network_choice}.rs{self.random_state_here}.ft{self.doFT}.s{self.nbins}.co{self.ncoef}.h{header}.aL{numOfAttentionLayers}.df{dffFaktor}.td{transDropout}.ld{lastDropout}.gn{gcnNodes}.fl{finalLayer}.st{doStations}.il{self.iLen}"
++            saveName = f"./results_perim/results.n{self.network_choice}.rs{self.random_state_here}.ft{self.doFT}.s{self.nbins}.co{self.ncoef}.h{header}.aL{numOfAttentionLayers}.df{dffFaktor}.td{transDropout}.ld{lastDropout}.gn{gcnNodes}.fl{finalLayer}.st{doStations}.il{self.iLen}"
+         else:
+-            saveName = f"./results/results.m{modelN}.n{self.network_choice}.rs{self.random_state_here}.ft{self.doFT}.s{self.nbins}.co{self.ncoef}.h{header}.f1{filters[0]}.f2{filters[1]}.ks{cnnKernal}.gn{gcnNodes}.fl{finalLayer}.il{self.iLen}"
++            saveName = f"./results_perim/results.m{modelN}.n{self.network_choice}.rs{self.random_state_here}.ft{self.doFT}.s{self.nbins}.co{self.ncoef}.h{header}.f1{filters[0]}.f2{filters[1]}.ks{cnnKernal}.gn{gcnNodes}.fl{finalLayer}.il{self.iLen}"
+ 
+         fullResults = dict()
+ 
+@@ -517,6 +520,7 @@
+         mse_list = []
+         rmse_list = []
+         mae_list = []
++        self.perim = []  # ph-gnn: per-IM metrics per fold
+         combi_list_s = dict()
+ 
+         firstRun = True
+@@ -563,6 +567,7 @@
+         fullResults['rmse'] = rmse_list
+         fullResults['mae'] = mae_list
+         fullResults['lasa'] = combi_list_s
++        fullResults['perim'] = self.perim  # ph-gnn
+ 
+         print("Done done")
+         

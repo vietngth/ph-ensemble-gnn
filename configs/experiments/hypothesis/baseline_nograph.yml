@@ -1,0 +1,4 @@
+# hypothesis test (H4 decomposition): TSER-GCN with no graph (identity operator: each station only its own features)
+exp: baseline
+graph_order: null
+graph_path: "{folder}/baseline/identity_operator.npy"

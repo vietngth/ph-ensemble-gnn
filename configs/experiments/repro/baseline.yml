@@ -1,0 +1,3 @@
+# single-graph TSER-GCN baseline (reported protocol)
+exp: baseline
+graph_order: null

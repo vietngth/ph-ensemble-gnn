@@ -1,0 +1,8 @@
+# shared_ph (clean G0) on the SFA inputs of FLAIRS-36 (experiments/build_sfa_inputs.py, fitted per seed on the training
+# split); 125 SFA coefficients per channel, so the encoder kernel is FLAIRS's 25; SFA values are not rescaled
+graph_order: 0
+graph_family_path: "{folder}/order_0/clean/pyg_graphs_{dataset}.pt"
+inputs_path: "{folder}/sfa/inputs_{dataset}_s{seed}.npy"
+window: 125
+kernel_size: 25
+normalize_inputs: false

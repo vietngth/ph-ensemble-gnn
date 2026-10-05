@@ -1,0 +1,49 @@
+# Environment used for the FLAIRS (Schwenke et al. 2023) and JOZ-CNN baseline runs (linux-64, conda-forge).
+# Versions are those of the environment that produced the paper numbers ("flairs-env"; pip freeze on the
+# compute server identical to the local env, checked 2026-10-05). The full package list with builds is in
+# flairs-env.conda-export.txt. Upstream FLAIRS README: python 3.9.13, tensorflow-gpu 2.6.2,
+# seml 0.3.7, spektral 1.2.0, scipy 1.9.1, pyts 0.12.0, numpy 1.19.5, gast 0.4.0.
+#
+#   conda env create -n flairs-env -f flairs-env.yml      (mamba recommended, as upstream advises)
+#
+# JOZ-CNN additionally needs matplotlib (main_cnn.py imports it): see tser-env-extra.txt.
+name: flairs-env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9.13
+  - tensorflow-gpu=2.6.2=cuda110*
+  - tensorflow=2.6.2
+  - keras=2.6.0
+  - cudatoolkit=11.0.3
+  - cudnn=8.9.7.29
+  - numpy=1.19.5
+  - scipy=1.9.1
+  - h5py=3.1.0
+  - gast=0.4.0
+  - protobuf=3.18.3
+  - pip
+  - pip:
+      - scikit-learn==1.2.1
+      - pyts==0.12.0
+      - spektral==1.2.0
+      - seml==0.3.7
+      - sacred==0.8.4
+      - pandas==1.4.4
+      - numba==0.56.4
+      - llvmlite==0.39.1
+      - networkx==3.2.1
+      - joblib==1.5.3
+      - threadpoolctl==3.7.0
+      - tqdm==4.70.1
+      - pyyaml==6.0.3
+      - munch==2.5.0
+      - jsonpickle==1.5.2
+      - docopt==0.6.2
+      - gitpython==3.1.44
+      - pymongo==4.18.2
+      - colorama==0.4.6
+      - py-cpuinfo==9.0.0
+      - python-dateutil==2.9.0.post0
+      - pytz==2026.4
+      - lxml==6.1.3

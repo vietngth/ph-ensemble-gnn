@@ -1,0 +1,54 @@
+--- main_cnn.py
++++ main_cnn_window.py
+@@ -24,6 +24,7 @@
+ network_choice = sys.argv[1]
+ model_chosen = sys.argv[2]
+ random_state_here = int(sys.argv[3])
++WINDOW = int(os.environ.get('JOZ_WINDOW', '1000'))  # ph-gnn: only change, input window in samples (100 Hz)
+ 
+ def print_time():
+     parser = datetime.datetime.now() 
+@@ -171,7 +172,7 @@
+     
+ import random
+ train_inputs, test_inputs, train_graphfeature, test_graphfeature, train_targets, testTargets = train_test_split(inputs, graph_features, targets, test_size=test_set_size, random_state=random_state_here)
+-testInputs = normalize(test_inputs[:, :, :1000, :])        
++testInputs = normalize(test_inputs[:, :, :WINDOW, :])        
+ 
+ 
+ import math
+@@ -189,8 +190,8 @@
+ 
+     trainInputsAll, trainTargets, valInputsAll, valTargets = merge_splits(inputsK, targetsK, k)
+ 
+-    trainInputs = normalize(trainInputsAll[:, :, :1000, :]) # 100 samples per second
+-    valInputs = normalize(valInputsAll[:, :, :1000, :])
++    trainInputs = normalize(trainInputsAll[:, :, :WINDOW, :]) # 100 samples per second
++    valInputs = normalize(valInputsAll[:, :, :WINDOW, :])
+ 
+     train_graphfeatureinput = train_graphfeature[0:trainInputsAll.shape[0],:,:]
+     val_graphfeatureinput = train_graphfeature[0:valInputsAll.shape[0],:,:]
+@@ -226,18 +227,23 @@
+     for i in range(0,5):
+         MSE.append(mean_squared_error(testTargets[:,:,i], new_predictions[:,:,i]))
+     print('mse = ',np.array(MSE).mean())
++    MSE_IM = list(MSE)  # ph-gnn: keep per-IM values for per_im.csv
+     MSE = np.array(MSE).mean()
+     
+     RMSE = []
+     for i in range(0,5):
+         RMSE.append(mean_squared_error(testTargets[:,:,i], new_predictions[:,:,i], squared=False))
+     print('rmse = ',np.array(RMSE).mean())
++    RMSE_IM = list(RMSE)
+     RMSE = np.array(RMSE).mean()
+     
+     MAE = []
+     for i in range(0,5):
+         MAE.append(mean_absolute_error(testTargets[:,:,i], new_predictions[:,:,i]))
+     print('MAE = ',np.array(MAE).mean())
++    with open('per_im.csv', 'a') as f_im:  # ph-gnn: logging only, per-IM test metrics of this fold (index 0..4 = PGA, PGV, PSA03, PSA1, PSA3)
++        for i in range(0, 5):
++            f_im.write(f'{k},{i},{MSE_IM[i]},{RMSE_IM[i]},{MAE[i]}\n')
+     MAE = np.array(MAE).mean()
+     
+ 

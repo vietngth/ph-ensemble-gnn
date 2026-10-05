@@ -1,0 +1,3 @@
+# 38 copies of one clean PH graph (G^(0) graph 19) sharing one encoder: ensembling control for the clean graphs
+graph_order: 0
+graph_family_path: "{folder}/order_0/clean/samegraph_{dataset}.pt"

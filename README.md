@@ -1,71 +1,72 @@
-# Persistent Homology-induced Graph Ensembles for Time Series Regressions
+# Repository of Persistent homology-induced graph ensembles for seismic intensity regression
 
-This is the code implementation for paper "Persistent Homology-induced Graph Ensembles for Time Series Regressions". 
+## Layout
 
-Our preprint can be found [here](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5521531).
-
-## Use Cases
-We experimented all two applications:
-1. Time-series Extrinsic Regression (TSER) on 2 seismic earthquake datasets: Central-West Italy (CW) and Central Italy (CI).
-2. Traffic speed forecasting on PEMS-BAY and METR-LA.
-
-## How To Run
-Our model implementations are provided in `{PROJECT_ROOT}/src`, and the experiment scripts are stored in `{PROJECT_ROOT}/experiments`. 
-
-### 1. Download datasets
-Due to large datasets, we cannot store them in the repository. Please download the dataset via this [link](https://drive.google.com/file/d/16IiHnW9_fhh5hMCODyCm6HPUKqiNERv0/view?usp=sharing). Then, place all the contents in `data/*` of the zip file into `{PROJECT_ROOT}/data` folder.
-
-### 2. Create a WanDB account
-We track all the logging information via `WanDB` together with `Torch Lightning`. You only need to create an account on this [platform](https://wandb.ai/site) and retrieve the Token-ID in the account. When first calling the script, the user is prompted to give the Token-ID input. Then, the experiments will run automatically. Optionally, the script also provides options to create a `WanDB` account directly in the terminal or to run the script without visualizations.
-
-### 3. Environment setup
-We use [uv](https://docs.astral.sh/uv/) to manage the Python environment. In the project root:
-
-1. Install dependencies declared in `pyproject.toml`:
 ```
-uv sync
-```
-2. Install `torch_geometric` and its dependencies manually to prevent CUDA conflicts:
-```
-source .venv/bin/activate
-uv pip install torch_geometric
-uv pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.5.1+cu124.html
-```
-3. Install the current project in editable (development) mode:
-```
-pip install -e .
+phgnn/            package: config, data (splits, folds, graph families), metrics, lr range test, models
+  models/         ensemble.py (PH-TSER-Att), baseline.py (TSER-GCN), kim_reference.py (KIM-GNN)
+experiments/      train.py, predict.py, build_*.py (derived data)
+baselines/        JOZ-CNN and the two FLAIRS models, run with their authors' code (patches, configs, run lists)
+tests/            unit tests, graph-construction checks
 ```
 
-Note that we use `PyTorch 2.5.1` with `CUDA 12.4`. You may want to install all packages manually with `uv` if you want to use a different PyTorch version.
+## Setup
 
-### 4. Example of running scripts
-One can run the scripts in `experiments` folder with manual input. We provide all the `yml` configurations in the `configs` folder for ease of reproducibility. 
-
-### 4.1. Earthquake Regressions
-Run attention-based model `PH-TSER-Att_0` on CI dataset:
-```python
-python3 experiments/train_regression.py --config configs/earthquake_regression/central_it/weighted/weighted_0.yml
 ```
-Run attention-based model `PH-TSER-Att_0` on CW dataset:
-```python
-python3 experiments/train_regression.py --config configs/earthquake_regression/central_west_it/weighted/weighted_0.yml
-```
-Run window reduction on attention-based model `PH-TSER-Att_0` on CW dataset with `W=4s`:
-```python
-python3 experiments/train_regression.py --config configs/earthquake_regression/central_west_it/windows/windows_400.yml
+uv venv --python 3.11 && source .venv/bin/activate
+uv pip install -e ".[test,ph]"
+uv pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-2.5.1+cu124.html
 ```
 
-#### 4.2. Traffic Forecasting
-Run attention-based model `PH-TSER-Att_0` on METR-LA dataset:
-```python
-python3 experiments/train_forecasting.py --config configs/traffic/metr_la/weighted_0.yml
+The `ph` extra (gudhi, geopy) is only needed to rebuild the PH graphs. The FLAIRS baselines and the SFA inputs need a
+separate TensorFlow environment (`baselines/env/`).
+
+## Data
+
+The datasets and checkpoints are available on HuggingFace:
+
 ```
-Run attention-based model `PH-TSER-Att_0` on PEMS-BAY dataset:
-```python
-python3 experiments/train_forecasting.py --config configs/traffic/metr_la/weighted_0_k150.yml
+huggingface-cli download vietngth/ph-ensemble-gnn-data ph-gnn-data.zip --repo-type dataset --local-dir .
+python -m zipfile -e ph-gnn-data.zip .     # creates data/central_it (CI) and data/central_west_it (CW)
 ```
 
-### 5. Results
-All results are stored in:
-- WanDB: all logging metrics, training and validation losses.
-- Local: `{PROJECT_ROOT}/logs/{task_name}/{experiment}/*`
+Or download manually from https://huggingface.co/datasets/vietngth/ph-ensemble-gnn-data and extract `ph-gnn-data.zip`
+in the repository root (it creates `data/`).
+
+Further descriptions of the data is available in data/README.md.
+
+The derived files can be rebuilt from the station coordinates, in this order:
+
+```
+python experiments/build_ph_graphs.py --data_root data --out_root data    # distances, H0/H1 death times, G0, G1, G0-1 
+python experiments/build_clean_graphs.py --data_root data                 # unweighted threshold graphs + one-graph control
+python experiments/build_hypothesis_graphs.py --data_root data            # graph families of the analysis 
+python experiments/build_single_scale_graphs.py --data_root data          # 38 single-scale controls
+python experiments/build_gcn_operators.py --data_root data                # GCN operator of the TSER-GCN graph
+<flairs-env>/bin/python experiments/build_sfa_inputs.py --data_root data  # SFA inputs
+```
+
+## **Training**
+
+```
+# untuned (published TSER-GCN settings)
+python experiments/train.py --config configs/fast.yml configs/experiments/clean/shared_g0.yml --set dataset=ci data_seed=1 --data_root data
+python experiments/train.py --config configs/fast.yml configs/experiments/clean/shared_g0.yml --set dataset=cw data_seed=1 --data_root data
+
+# tuned (AdamW, one-cycle, learning rate from a range test)
+python experiments/train.py --config configs/fast.yml configs/experiments/clean/shared_g0.yml configs/experiments/optim/fastai.yml --set dataset=ci data_seed=1 --data_root data
+python experiments/train.py --config configs/fast.yml configs/experiments/clean/shared_g0.yml configs/experiments/optim/fastai.yml --set dataset=cw data_seed=1 --data_root data
+```
+
+`data_seed` (1-10) fixes the train/test split; results go to `logs/runs/`.
+
+## **Inference**
+
+Download the checkpoints into `data/checkpoints/` (or manually from https://huggingface.co/vietngth/ph-ensemble-gnn):
+
+```
+huggingface-cli download vietngth/ph-ensemble-gnn --local-dir data/checkpoints
+python experiments/predict.py --checkpoint data/checkpoints/ci_tuned_seed1/best.ckpt --results data/checkpoints/ci_tuned_seed1/results.json --data_root data
+```
+
+Folders: `{ci,cw}_{tuned,untuned}_seed1/`, each with `best.ckpt` and `results.json`.

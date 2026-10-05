@@ -1,6 +1,16 @@
+# data, runs and outputs
 data/
-__pycache__/
-src.egg-info/
+runs/
+runs_*/
 logs/
-lightning_logs
+lightning_logs/
+*.ckpt
+*.pt
+*.npy
+*.h5
+# environments and caches
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
 .ipynb_checkpoints/

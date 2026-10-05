@@ -1,0 +1,39 @@
+init:
+  seed_value: 1
+  patience: 15
+  model_chosen: main
+data:
+  doFT: true
+  nbins: 6
+  ncoef: 125
+  iLen: 700
+model:
+  useEmbed: false
+  useSaves: false
+  header: 6
+  numOfAttentionLayers: 2
+  dffFaktor: 0.5
+  transDropout: 0.0
+  lastDropout: 0.4
+  steps:
+  - max
+  layerCombis:
+  - hl
+  localAvgThresholds:
+  - - 0.5
+    - 0.5
+  - - 1.0
+    - 1.0
+  - - 1.4
+    - 1.4
+  doMixedLasa: false
+  epochs: 200
+  modelN: bloem
+  doStations: false
+  doAbstract: false
+  gcnNodes: 32
+  finalLayer: 256
+  filters:
+  - 16
+  - 32
+  cnnKernal: 25

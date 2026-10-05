@@ -1,0 +1,3 @@
+# hypothesis test: shared_ph on the g0_rand3 family (experiments/build_hypothesis_graphs.py)
+graph_order: 0
+graph_family_path: "{folder}/hypothesis/g0_rand3_{dataset}.pt"

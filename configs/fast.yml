@@ -1,0 +1,3 @@
+# bf16 mixed precision with cuDNN autotuning: about 2x faster, results vary within the seed-to-seed noise
+precision: bf16-mixed
+deterministic: false

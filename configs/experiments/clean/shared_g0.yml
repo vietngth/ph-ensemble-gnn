@@ -1,0 +1,3 @@
+# shared_ph on the unweighted PH threshold graphs (unit edge weights, A + I), G^(0)
+graph_order: 0
+graph_family_path: "{folder}/order_0/clean/pyg_graphs_{dataset}.pt"

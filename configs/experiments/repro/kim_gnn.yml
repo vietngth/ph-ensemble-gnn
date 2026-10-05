@@ -1,0 +1,20 @@
+# KIM-GNN baseline: Kim et al. (2022) model from the authors' code (phgnn/models/kim_reference.py), adapted as the TSER-GCN
+# paper describes (Sec. 3.8):
+# - regression outputs: the TSER-GCN regression head (flatten, dropout 0.4, dense 128, 5 x N) replaces Kim's
+#   readout and classifier;
+# - the graph matrix: TSER-GCN's graph input (released minmax_normalized_laplacian). Kim's unnormalized neighbour sum
+#   over the raw weighted adjacency (tser_weighted_adjacency.npy) diverges on these 39-station graphs;
+# - station coordinates as node features.
+# Training as in the authors' train.py: Adam 1e-4, weight decay 1e-5, batch 64, 500 epochs (no early stopping),
+# best-validation checkpoint. Same splits and folds as every other model.
+# Check on CW seed 1: MAE 0.400 (Kim's mean readout gave 0.550; TSER-GCN paper reports 0.45).
+exp: kim
+graph_order: null
+optimizer: adam
+lr: 1.0e-4
+weight_decay: 1.0e-5
+reg_const: 0.0
+batch_size: 64
+epochs: 500
+patience: null
+lr_schedule: constant

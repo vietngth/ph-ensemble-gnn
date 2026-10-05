@@ -1,0 +1,4 @@
+# hypothesis test: clean G0-1 trained with the competitive mixture loss (Jacobs et al. 1991, Eq. 1.2)
+graph_order: [0, 1]
+graph_family_path: "{folder}/order_0-1/clean/pyg_graphs_{dataset}.pt"
+mixture_loss: competitive

@@ -1,0 +1,3 @@
+# single-scale control: 38 copies of clean G^(0) graph 32 (experiments/build_single_scale_graphs.py)
+graph_order: 0
+graph_family_path: "{folder}/hypothesis/single/g0_k32_{dataset}.pt"

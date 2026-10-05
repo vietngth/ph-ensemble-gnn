@@ -1,0 +1,9 @@
+# "tser-env" (JOZ-CNN runs) = a copy of flairs-env plus matplotlib, which main_cnn.py imports.
+# These are the only packages in which its pip freeze differs from flairs-env (checked 2026-10-05).
+#   conda create -n tser-env --clone flairs-env && conda run -n tser-env python -m pip install -r tser-env-extra.txt
+matplotlib==3.5.3
+cycler==0.12.1
+fonttools==4.60.2
+kiwisolver==1.4.7
+pillow==11.3.0
+pyparsing==3.3.3

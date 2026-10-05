@@ -1,0 +1,11 @@
+# fastai recipe: per fold, lr_find on the training data (valley suggestion), then fit_one_cycle with fastai's defaults
+# (fastai's Adam = AdamW with betas (0.9, 0.99), eps 1e-5, weight decay 1e-2; pct_start 0.25, div 25, final lr = max / 1e5)
+# for the published number of epochs; no search. lr_find verified against fastai 2.7.18 (identical suggestions).
+optimizer: fastai_adam
+lr_schedule: one_cycle
+weight_decay: 0.01
+reg_const: 0.0
+patience: null
+lr_find: true
+one_cycle_pct_start: 0.25
+one_cycle_final_div: 4000.0
